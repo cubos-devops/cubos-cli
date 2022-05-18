@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+
+if grep -q "cubos-dev" ~/.kube/config; then
+  export CUBOS_DEV_GKE=1
+  export CUBOS_INTERNAL_CLUSTER=1
+fi
+
+rm -f tsconfig.json
+npx tsc --init --target es2018 --lib es2018 --strict false --noImplicitAny false > /dev/null
+
+mkdir -p node_modules/@cubos
+rm -rf node_modules/@cubos/kube-templates
+ln -s /usr/local/lib/node_modules/@cubos/kube-templates node_modules/@cubos/kube-templates
+
+mkdir -p node_modules/@types
+rm -rf node_modules/@types/node
+ln -s /usr/local/lib/node_modules/@types/node node_modules/@types/node
+
+cat > __deploy.ts <<EOF
+  import * as fs from "fs";
+
+  for (const file of fs.readdirSync("deploy")) {
+    if (file.match(/\.ts$/)) {
+      const result = require(\`./deploy/\${file}\`);
+
+      if ("default" in result && Array.isArray(result.default)) {
+        result.default.forEach((item: { yaml?: string }) => {
+          if ("yaml" in item) {
+            console.log(item.yaml);
+          }
+        });
+      }
+    }
+  }
+EOF
+
+(
+  ts-node __deploy.ts
+  for file in $(ls deploy/*.yml 2>/dev/null); do
+    echo "---"
+    grep -q "<%" $file && cat $file
+  done > tmp_deploy_ejs.yml
+  ejs-cli tmp_deploy_ejs.yml
+  for file in $(ls deploy/*.yml 2>/dev/null); do
+    echo "---"
+    grep -q "<%" $file || cat $file | envsubst
+  done
+) > tmp_deploy.yml
+
+kubectl apply -f tmp_deploy.yml || (tail -n +1 tmp_deploy.yml && exit 1)
