@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+NEW_SERVER_NAME_ENV_VAR="${1}_K8S_SERVER_NAME"
+NEW_SERVER_URL_ENV_VAR="${1}_K8S_SERVER_URL"
+NEW_SERVER_CA_ENV_VAR="${1}_K8S_SERVER_CA"
+NEW_TOKEN_ENV_VAR="${1}_K8S_TOKEN"
+
+if [ -n "${!NEW_SERVER_URL_ENV_VAR}" ] && [ -n "${!NEW_SERVER_CA_ENV_VAR}" ] && [ -n "${!NEW_TOKEN_ENV_VAR}" ]; then
+  SERVER_NAME="${!NEW_SERVER_NAME_ENV_VAR:-ci}"
+  SERVER_URL="${!NEW_SERVER_URL_ENV_VAR}"
+  SERVER_CA="${!NEW_SERVER_CA_ENV_VAR}"
+  TOKEN="${!NEW_TOKEN_ENV_VAR}"
+else
+  echo -e "\e[1m\e[91m⛔ A variável de ambiente '${1}' não foi definida. Você esqueceu de definir ou proteger sua branch?\e[0m"
+  echo -e "\e[1m\e[36mℹ️ Caso esteja usando o modelo novo de deploy, você precisa definir as variáveis de ambiente '${1}_K8S_SERVER_NAME' (opcional), '${1}_K8S_SERVER_URL', '${1}_K8S_SERVER_CA' e '${1}_K8S_TOKEN'.\e[0m"
+  exit 1
+fi
+
+kubectl config set-cluster "${SERVER_NAME}" --server="${SERVER_URL}"
+kubectl config set clusters."${SERVER_NAME}".certificate-authority-data "${SERVER_CA}"
+kubectl config set-credentials ci --token="${TOKEN}"
+kubectl config set-context "${SERVER_NAME}"-deploy --cluster="${SERVER_NAME}" --user=ci
+kubectl config use-context "${SERVER_NAME}"-deploy
