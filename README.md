@@ -28,12 +28,12 @@ jobs:
       - name: Set Cluster
         env:
           KUBERNETES_DEV_TOKEN: ${{ secrets.KUBERNETES_DEV_TOKEN }}
-        uses: cubos-devops/cubos-cli@v0.0.1
+        uses: cubos-devops/cubos-cli@v1
         with:
           script: "dev_cluster_from_env KUBERNETES_DEV_TOKEN"
 
       - name: Deploy (Probably)
-        uses: cubos-devops/cubos-cli@v0.0.1
+        uses: cubos-devops/cubos-cli@v1
         with:
           script: "deploy"
 
