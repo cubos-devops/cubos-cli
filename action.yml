@@ -1,0 +1,11 @@
+name: "Cubos CLI"
+description: "Cubos CLI"
+inputs:
+  script:
+    description: "Script to run"
+    required: true
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.script }}
