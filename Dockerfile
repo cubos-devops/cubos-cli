@@ -10,7 +10,6 @@ RUN curl -LO https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl \
  && mv ./kubectl /usr/local/bin 
 
 COPY scripts/* /bin/
-COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/bin/sh", "-c"]
 
