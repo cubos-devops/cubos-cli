@@ -1,5 +1,5 @@
 # Container image that runs your code
-FROM node:18-alpine
+FROM node:20-alpine
 
 RUN npm i -g ejs-cli ts-node typescript @cubos/kube-templates @types/node@~14 firebase-tools && npm cache clean --force
 
