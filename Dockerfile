@@ -1,7 +1,7 @@
 # Container image that runs your code
 FROM node:22-alpine
 
-RUN npm i -g ejs-cli ts-node typescript @cubos/kube-templates @types/node@~24 firebase-tools && npm cache clean --force
+RUN npm i -g ejs-cli ts-node typescript@6.0.3 @cubos/kube-templates @types/node@~24 firebase-tools && npm cache clean --force
 
 RUN apk add --update bash curl
 
